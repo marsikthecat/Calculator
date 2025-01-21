@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
   private TextField outputField;
+  private final CalcHelper helper = new CalcHelper();
   private final String[][] symbols = {{"C", ">", "√", "x²", "π"}, {"9", "8", "7", "/", "x³"},
     {"6", "5", "4", "*", "e"}, {"3", "2", "1", "-", "!"}, {"0", "=", ".", "+"}};
 
@@ -49,7 +50,7 @@ public class Main extends Application {
           case "x³" -> button.act(this::calcKube);
           case "e" -> button.act(() -> insert("2.718128"));
           case "!" -> button.act(this::calcfacultaet);
-          case "/", "*", "+", "-" -> button.act(() -> handleInputButtons(button));
+          case "/", "*", "+", "-" -> button.act(() -> handleOperatorButtons(button));
           case "=" -> button.act(this::calculate);
           default -> button.act(() -> insert(symbol));
         }
@@ -77,28 +78,24 @@ public class Main extends Application {
     insert(stuff);
   }
 
-  void delete() {
+  private void delete() {
     if (!outputField.getText().isEmpty()) {
       outputField.setText(outputField.getText().substring(0, outputField.getText().length() - 1));
     }
   }
 
-  void handleInputButtons(Button btn) {
-    String btntext = btn.getText();
+  private void handleOperatorButtons(Button btn) {
     String input = outputField.getText();
-    if (hasoperator(btntext) && hasoperator(input) && !bminus(input)) {
-      calculate();
+    if (helper.insertOperator(input)) {
+      insert(btn.getText());
     } else {
-      if (hasTwoOperators(input) && hasoperator(btntext)) {
-        calculate();
-      } else {
-        outputField.setText(outputField.getText() + btn.getText());
-      }
+      calculate();
+      insert(btn.getText());
     }
   }
 
-  void calcPow() {
-    if (checkn(outputField.getText())) {
+  private void calcPow() {
+    if (helper.checkn(outputField.getText())) {
       double d = Double.parseDouble(outputField.getText());
       clearAndInsert(String.valueOf(d * d));
     } else {
@@ -106,8 +103,8 @@ public class Main extends Application {
     }
   }
 
-  void calcKube() {
-    if (checkn(outputField.getText())) {
+  private void calcKube() {
+    if (helper.checkn(outputField.getText())) {
       double d = Double.parseDouble(outputField.getText());
       clearAndInsert(String.valueOf(d * d * d));
     } else {
@@ -115,8 +112,8 @@ public class Main extends Application {
     }
   }
 
-  void calcSqrt() {
-    if (checkn(outputField.getText())) {
+  private void calcSqrt() {
+    if (helper.checkn(outputField.getText())) {
       double d = Double.parseDouble(outputField.getText());
       if (d > 0) {
         clearAndInsert(String.valueOf(Math.sqrt(d)));
@@ -128,8 +125,8 @@ public class Main extends Application {
     }
   }
 
-  void calcfacultaet() {
-    if (checkn(outputField.getText())) {
+  private void calcfacultaet() {
+    if (helper.checkn(outputField.getText())) {
       double d = Double.parseDouble(outputField.getText());
       if (d >= 0) {
         clearAndInsert(String.valueOf(fakultaet(d)));
@@ -141,11 +138,7 @@ public class Main extends Application {
     }
   }
 
-  boolean bminus(String s) {
-    return s.charAt(0) == '-';
-  }
-
-  double fakultaet(double a) {
+  private double fakultaet(double a) {
     if (a <= 1) {
       return a;
     } else {
@@ -153,7 +146,7 @@ public class Main extends Application {
     }
   }
 
-  void calculate() {
+  private void calculate() {
     String input = outputField.getText();
     int pos = 0;
     char operator = 0;
@@ -170,7 +163,7 @@ public class Main extends Application {
     if (pos != 0) {
       String s1 = input.substring(0, pos);
       String s2 = input.substring(pos + 1);
-      if (checkn(s1) && checkn(s2)) {
+      if (helper.checkn(s1) && helper.checkn(s2)) {
         double n1 = Double.parseDouble(s1);
         double n2 = Double.parseDouble(s2);
         double r;
@@ -181,43 +174,11 @@ public class Main extends Application {
           case '/' -> r = n1 / n2;
           default -> r = 0;
         }
-        outputField.setText(String.valueOf(cut(r)));
+        clearAndInsert(String.valueOf(r));
       } else {
-        error("Calculation failed: \nWrong input");
+        error("Calculation failed: \nInvalid input");
       }
     }
-  }
-
-  boolean checkn(String s1) {
-    try {
-      Double.parseDouble(s1);
-    } catch (NumberFormatException e) {
-      return false;
-    }
-    return true;
-  }
-
-  double cut(double number) {
-    double factor = Math.pow(10, 5);
-    return Math.floor(number * factor) / factor;
-  }
-
-  boolean hasoperator(String s) {
-    return s.contains("+") || s.contains("-") || s.contains("*") || s.contains("/");
-  }
-
-  boolean hasTwoOperators(String input) {
-    String operators = "+-*/";
-    int operatorCount = 0;
-    for (int i = 0; i < input.length(); i++) {
-      if (operators.indexOf(input.charAt(i)) != -1) {
-        operatorCount++;
-        if (operatorCount >= 2) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   private void error(String message) {
