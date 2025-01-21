@@ -10,7 +10,7 @@ import javafx.scene.text.Font;
 public class CalcButton extends javafx.scene.control.Button {
 
   /**
-   * Constructor.
+   * Constructor that adds this instance in the gridpane according to the r and c.
    */
 
   public CalcButton(String sign, int r, int c, GridPane gridPane) {

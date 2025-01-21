@@ -1,9 +1,20 @@
 package com.example.calulator;
 
+/**
+ * Helper class for performing helpful methods.
+ */
+
 public class CalcHelper {
 
-  public CalcHelper() {
-  }
+  /**
+   * empty constructor.
+   */
+
+  public CalcHelper() {}
+
+  /**
+   * checks, if more operators can be inserted.
+   */
 
   public boolean insertOperator(String content) {
     boolean insertOperator = true;
@@ -16,8 +27,8 @@ public class CalcHelper {
       }
       return insertOperator;
     } else {
-        return !content.contains("+") && !content.contains("-") &&
-                !content.contains("*") && !content.contains("/");
+      return !content.contains("+") && !content.contains("-")
+              && !content.contains("*") && !content.contains("/");
     }
   }
 
@@ -25,14 +36,15 @@ public class CalcHelper {
     return i == '+' || i == '-' || i == '*' || i == '/';
   }
 
-  public boolean checkn(String s1) {
+  /**
+   * checks if the input is a number.
+   */
+
+  public void isNumber(String s1) throws InvalidInputException {
     try {
       Double.parseDouble(s1);
     } catch (NumberFormatException e) {
-      return false;
+      throw new InvalidInputException("Invalid Input");
     }
-    return true;
   }
-
-
 }
