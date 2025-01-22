@@ -13,6 +13,11 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
+ * Main: 204 lines.
+ * CalcButton: 26 lines.
+ * CalcHelper: 50 lines.
+ * InvalidInputException: 11 lines.
+ * 291 lines.
  */
 
 public class Main extends Application {
@@ -34,7 +39,7 @@ public class Main extends Application {
     VBox box = new VBox();
     box.getChildren().addAll(rsection, table);
     Scene scene = new Scene(box, 270, 310);
-    stage.setTitle("Hello!");
+    stage.setTitle("Calculator");
     stage.setScene(scene);
     stage.setResizable(false);
     stage.show();
