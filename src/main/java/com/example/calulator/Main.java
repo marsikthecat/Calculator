@@ -69,6 +69,14 @@ public class Main extends Application {
 
   private void insert(String stuff) {
     outputField.setText(outputField.getText() + stuff);
+    if (outputField.getText().length() > 16) {
+      Alert alert = new Alert(Alert.AlertType.INFORMATION);
+      alert.setTitle("Overflow detected");
+      alert.setHeaderText("The result of the calculation exceeded the size of the textfield. \n" +
+              "here is the full result:");
+      alert.setContentText(outputField.getText());
+      alert.showAndWait();
+    }
   }
 
   private void clearAndInsert(String stuff) {
@@ -139,18 +147,23 @@ public class Main extends Application {
   }
 
   private void faculty(double d) {
+    if (d > 170) {
+      error(new InvalidInputException("My friend, the value is too big for me"));
+      return;
+    }
     try {
-      fakultaet(d);
+      double ans = facultyHelper(d);
+      clearAndInsert(String.valueOf(ans));
     } catch (InvalidInputException e) {
       error(e);
     }
   }
 
-  private double fakultaet(double a) throws InvalidInputException {
+  private double facultyHelper(double a) throws InvalidInputException {
     if (a < 0) {
-      throw new InvalidInputException("Number must be positive or zero");
+      throw new InvalidInputException("My friend, faculty is only for positive or zero");
     }
-    return a <= 1 ? a : a * fakultaet(a - 1);
+    return a <= 1 ? a : a * facultyHelper(a - 1);
   }
 
   private void calculate() {
@@ -173,9 +186,14 @@ public class Main extends Application {
       try {
         helper.isNumber(s1);
         helper.isNumber(s2);
-
         double n1 = Double.parseDouble(s1);
         double n2 = Double.parseDouble(s2);
+        if (operator == '/' && n2 == 0) {
+          error(new InvalidInputException("My friend, division by zero is forbidden \n" +
+                  "Do you wanna get smoked?"));
+          outputField.clear();
+          return;
+        }
         double r;
         switch (operator) {
           case '+' -> r = n1 + n2;
@@ -193,8 +211,8 @@ public class Main extends Application {
 
   private void error(Exception exception) {
     Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle("Fucking Error");
-    alert.setHeaderText("A fucking error occured: ");
+    alert.setTitle("Error");
+    alert.setHeaderText("Something went wrong while calculating: ");
     alert.setContentText(exception.getMessage());
     alert.showAndWait();
   }
