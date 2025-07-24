@@ -4,7 +4,6 @@ import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -13,17 +12,16 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
- * Main: 204 lines.
+ * Main: 173 lines.
  * CalcButton: 26 lines.
- * CalcHelper: 50 lines.
  * InvalidInputException: 11 lines.
- * 291 lines.
+ * SimpleParser: 68 lines.
+ * 278 lines.
  */
 
 public class Main extends Application {
 
   private TextField outputField;
-  private final CalcHelper helper = new CalcHelper();
   private final String[][] symbols = {{"C", ">", "√", "x²", "π"}, {"9", "8", "7", "/", "x³"},
     {"6", "5", "4", "*", "e"}, {"3", "2", "1", "-", "!"}, {"0", "=", ".", "+", "N"}};
 
@@ -59,7 +57,6 @@ public class Main extends Application {
           case "=" -> button.act(this::calculate);
           case "π" -> button.act(() -> insert("3.141529"));
           case "e" -> button.act(() -> insert("2.718128"));
-          case "/", "*", "+", "-" -> button.act(() -> handleOperatorButtons(button));
           default -> button.act(() -> insert(symbol));
         }
       }
@@ -90,39 +87,26 @@ public class Main extends Application {
     }
   }
 
-  private void handleOperatorButtons(Button btn) {
-    String input = outputField.getText();
-    if (input.isEmpty()) {
+  private void calcExp(String specialOperation) {
+    double d;
+    try {
+      d = SimpleParser.parse(outputField.getText());
+    } catch (Exception e) {
+      error(e);
       return;
     }
-    if (helper.insertOperator(input)) {
-      insert(btn.getText());
-    } else {
-      calculate();
-      insert(btn.getText());
-    }
-  }
-
-  private void calcExp(String specialOperation) {
-    String input = outputField.getText();
-    try {
-      helper.isNumber(input);
-      double d = Double.parseDouble(input);
-      switch (specialOperation) {
-        case "√": sqrt(d);
-          break;
-        case "x²": pow(d);
-          break;
-        case "x³": cube(d);
-          break;
-        case "!": faculty(d);
-          break;
-        case "N": negative(d);
-          break;
-        default: throw new UnsupportedOperationException("Unsupported Operation detected");
-      }
-    } catch (InvalidInputException e) {
-      error(e);
+    switch (specialOperation) {
+      case "√": sqrt(d);
+      break;
+      case "x²": pow(d);
+      break;
+      case "x³": cube(d);
+      break;
+      case "!": faculty(d);
+      break;
+      case "N": negative(d);
+      break;
+      default: throw new UnsupportedOperationException("Unsupported Operation detected");
     }
   }
 
@@ -166,46 +150,12 @@ public class Main extends Application {
     return a <= 1 ? a : a * facultyHelper(a - 1);
   }
 
-  private void calculate() {
-    String input = outputField.getText();
-    int pos = 0;
-    char operator = 0;
-    char[] operators = {'+', '-', '*', '/'};
-    char[] chars = input.toCharArray();
-    for (int i = 0; i < input.length(); i++) {
-      for (char c : operators) {
-        if (chars[i] == c) {
-          pos = i;
-          operator = c;
-        }
-      }
-    }
-    if (pos != 0) {
-      String s1 = input.substring(0, pos);
-      String s2 = input.substring(pos + 1);
-      try {
-        helper.isNumber(s1);
-        helper.isNumber(s2);
-        double n1 = Double.parseDouble(s1);
-        double n2 = Double.parseDouble(s2);
-        if (operator == '/' && n2 == 0) {
-          error(new InvalidInputException("My friend, division by zero is forbidden \n" +
-                  "Do you wanna get smoked?"));
-          outputField.clear();
-          return;
-        }
-        double r;
-        switch (operator) {
-          case '+' -> r = n1 + n2;
-          case '-' -> r = n1 - n2;
-          case '*' -> r = n1 * n2;
-          case '/' -> r = n1 / n2;
-          default -> r = 0;
-        }
-        clearAndInsert(String.valueOf(r));
-      } catch (InvalidInputException e) {
-        error(e);
-      }
+  private void calculate()  {
+    try {
+      double result = SimpleParser.parse(outputField.getText());
+      clearAndInsert(String.valueOf(result));
+    } catch (Exception e) {
+      error(e);
     }
   }
 
@@ -218,6 +168,6 @@ public class Main extends Application {
   }
 
   public static void main(String[] args) {
-    launch();
+    launch(args);
   }
 }
