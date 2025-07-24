@@ -20,6 +20,10 @@ public class CalcButton extends javafx.scene.control.Button {
     this.setFont(new Font(25));
   }
 
+  /**
+   * Sets up the action, the spcific Button should perform.
+   */
+
   public void act(Runnable action) {
     this.setOnAction(e -> action.run());
   }

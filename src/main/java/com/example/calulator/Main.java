@@ -5,6 +5,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -12,11 +13,10 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
- * Main: 173 lines.
- * CalcButton: 26 lines.
- * InvalidInputException: 11 lines.
- * SimpleParser: 68 lines.
- * 278 lines.
+ * Main: 196 lines.
+ * CalcButton: 30 lines.
+ * SimpleParser: 111 lines.
+ * 337 lines.
  */
 
 public class Main extends Application {
@@ -30,17 +30,37 @@ public class Main extends Application {
     outputField = new TextField();
     outputField.setStyle("-fx-pref-width: 250px; -fx-font-size: 25; -fx-cursor: not-allowed");
     outputField.setEditable(false);
+    outputField.setFocusTraversable(false);
     HBox rsection = new HBox();
     rsection.setAlignment(Pos.CENTER);
     rsection.getChildren().addAll(outputField);
     GridPane table = getGridPaneWithButtons();
     VBox box = new VBox();
     box.getChildren().addAll(rsection, table);
-    Scene scene = new Scene(box, 270, 310);
+    Scene scene = getScene(box);
     stage.setTitle("Calculator");
     stage.setScene(scene);
     stage.setResizable(false);
     stage.show();
+  }
+
+  private Scene getScene(VBox box) {
+    Scene scene = new Scene(box, 270, 310);
+    scene.setOnKeyPressed(e -> {
+      if (e.getCode().isDigitKey() || e.getCode() == KeyCode.PLUS
+          || e.getCode() == KeyCode.MINUS || e.getCode() == KeyCode.MULTIPLY
+          || e.getCode() == KeyCode.DIVIDE || e.getCode() == KeyCode.BRACELEFT
+          || e.getCode() == KeyCode.BRACERIGHT || e.getCode() == KeyCode.PERIOD) {
+        insert(e.getText());
+      }
+      if (e.getCode() == KeyCode.F2) {
+        calculate();
+      }
+      if (e.getCode() == KeyCode.BACK_SPACE) {
+        delete();
+      }
+    });
+    return scene;
   }
 
   private GridPane getGridPaneWithButtons() {
@@ -69,8 +89,8 @@ public class Main extends Application {
     if (outputField.getText().length() > 16) {
       Alert alert = new Alert(Alert.AlertType.INFORMATION);
       alert.setTitle("Overflow detected");
-      alert.setHeaderText("The result of the calculation exceeded the size of the textfield. \n" +
-              "here is the full result:");
+      alert.setHeaderText("The result of the calculation exceeded the size of the textfield. \n"
+              + "here is the full result:");
       alert.setContentText(outputField.getText());
       alert.showAndWait();
     }
@@ -132,22 +152,22 @@ public class Main extends Application {
 
   private void faculty(double d) {
     if (d > 170) {
-      error(new InvalidInputException("My friend, the value is too big for me"));
+      error(new IllegalArgumentException("My friend, the value is too big for me"));
       return;
     }
     try {
       double ans = facultyHelper(d);
       clearAndInsert(String.valueOf(ans));
-    } catch (InvalidInputException e) {
+    } catch (IllegalArgumentException e) {
       error(e);
     }
   }
 
-  private double facultyHelper(double a) throws InvalidInputException {
+  private double facultyHelper(double a) throws IllegalArgumentException {
     if (a < 0) {
-      throw new InvalidInputException("My friend, faculty is only for positive or zero");
+      throw new IllegalArgumentException("My friend, faculty is only for positive or zero");
     }
-    return a <= 1 ? a : a * facultyHelper(a - 1);
+    return a <= 1 ? 1 : a * facultyHelper(a - 1);
   }
 
   private void calculate()  {
@@ -167,6 +187,9 @@ public class Main extends Application {
     alert.showAndWait();
   }
 
+  /**
+   * look below OMG!, there is a main method!.
+   */
   public static void main(String[] args) {
     launch(args);
   }
