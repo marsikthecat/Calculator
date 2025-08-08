@@ -35,10 +35,7 @@ public class Main extends Application {
   @Override
   public void start(Stage stage) {
     Label menuIcon = new Label("☰");
-    menuIcon.setOnMouseClicked(e -> {
-      System.out.println("a");
-      overlayMenu.setVisible(true);
-    });
+    menuIcon.setOnMouseClicked(e -> overlayMenu.setVisible(true));
     menuIcon.setFont(new Font(20));
     menuIcon.setTextFill(Color.WHITE);
     HBox topNav = new HBox(menuIcon);

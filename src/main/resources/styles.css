@@ -7,3 +7,10 @@
 .overlay Label {
   -fx-font-size: 20;
 }
+
+.overlay HBox Label {
+  -fx-font-size: 14;
+}
+.overlay HBox TextField {
+  -fx-pref-width: 60;
+}
