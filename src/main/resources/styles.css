@@ -1,0 +1,9 @@
+.overlay {
+    -fx-background-color: rgba(255, 255, 255, 0.8);
+    -fx-pref-width: 320;
+    -fx-pref-height: 480;
+}
+
+.overlay Label {
+  -fx-font-size: 20;
+}

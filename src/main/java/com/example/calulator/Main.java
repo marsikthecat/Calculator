@@ -1,15 +1,20 @@
 package com.example.calulator;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * Simple Calculator.
@@ -22,30 +27,54 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
   private TextField outputField;
-  private final String[][] symbols = {{"C", ">", "√", "x²", "π"}, {"9", "8", "7", "/", "x³"},
-    {"6", "5", "4", "*", "e"}, {"3", "2", "1", "-", "!"}, {"0", "=", ".", "+", "N"}};
+  private final String[][] symbols = {{"ln", "mod", "x³", "√", "x²", "log10"}, {"e", "(", "7", "4", "1", "1/X"},
+    {"π",")", "8", "5", "2", "0"}, {"C", "!", "9", "6", "3", "."}, {">", "/", "*", "+", "-", "="}};
+
+  private final OverlayMenu overlayMenu = new OverlayMenu();
 
   @Override
   public void start(Stage stage) {
+    Label menuIcon = new Label("☰");
+    menuIcon.setOnMouseClicked(e -> {
+      System.out.println("a");
+      overlayMenu.setVisible(true);
+    });
+    menuIcon.setFont(new Font(20));
+    menuIcon.setTextFill(Color.WHITE);
+    HBox topNav = new HBox(menuIcon);
+    topNav.setPadding(new Insets(5, 0, 15, 10));
+
+    overlayMenu.setLayoutX(0);
+    overlayMenu.setLayoutY(0);
+    overlayMenu.setVisible(false);
+
     outputField = new TextField();
-    outputField.setStyle("-fx-pref-width: 250px; -fx-font-size: 25; -fx-cursor: not-allowed");
+    outputField.setStyle("-fx-pref-width: 300px; -fx-font-size: 25; -fx-cursor: not-allowed");
     outputField.setEditable(false);
     outputField.setFocusTraversable(false);
     HBox rsection = new HBox();
     rsection.setAlignment(Pos.CENTER);
     rsection.getChildren().addAll(outputField);
+
     GridPane table = getGridPaneWithButtons();
+
     VBox box = new VBox();
-    box.getChildren().addAll(rsection, table);
-    Scene scene = getScene(box);
+    box.setStyle("-fx-background-color: #b9b9b9");
+    box.getChildren().addAll(topNav, rsection, table, overlayMenu);
+
+    StackPane root = new StackPane(box, overlayMenu);
+
+    Scene scene = getScene(root);
     stage.setTitle("Calculator");
     stage.setScene(scene);
     stage.setResizable(false);
     stage.show();
   }
 
-  private Scene getScene(VBox box) {
-    Scene scene = new Scene(box, 270, 310);
+  private Scene getScene(StackPane stackPane) {
+    Scene scene = new Scene(stackPane, 320, 480);
+    scene.getStylesheets().add(Objects.requireNonNull(
+            getClass().getResource("/styles.css")).toExternalForm());
     scene.setOnKeyPressed(e -> {
       if (e.getCode().isDigitKey() || e.getCode() == KeyCode.PLUS
           || e.getCode() == KeyCode.MINUS || e.getCode() == KeyCode.MULTIPLY
@@ -66,6 +95,9 @@ public class Main extends Application {
   private GridPane getGridPaneWithButtons() {
     GridPane table = new GridPane();
     table.setAlignment(Pos.CENTER);
+    table.setHgap(10);
+    table.setVgap(10);
+    table.setPadding(new Insets(10));
     for (int row = 0; row < symbols.length; row++) {
       for (int col = 0; col < symbols[row].length; col++) {
         String symbol = symbols[row][col];
@@ -73,7 +105,7 @@ public class Main extends Application {
         switch (symbol) {
           case "C" -> button.act(() -> outputField.clear());
           case ">" -> button.act(this::delete);
-          case "√", "x²", "x³", "!", "N" ->  button.act(() -> calcExp(symbol));
+          case "√", "x²", "x³", "!", "ln", "mod", "log10", "1/X" ->  button.act(() -> calcExp(symbol));
           case "=" -> button.act(this::calculate);
           case "π" -> button.act(() -> insert("3.141529"));
           case "e" -> button.act(() -> insert("2.718128"));
@@ -86,19 +118,20 @@ public class Main extends Application {
 
   private void insert(String stuff) {
     outputField.setText(outputField.getText() + stuff);
-    if (outputField.getText().length() > 16) {
-      Alert alert = new Alert(Alert.AlertType.INFORMATION);
-      alert.setTitle("Overflow detected");
-      alert.setHeaderText("The result of the calculation exceeded the size of the textfield. \n"
-              + "here is the full result:");
-      alert.setContentText(outputField.getText());
-      alert.showAndWait();
-    }
   }
 
   private void clearAndInsert(String stuff) {
+    overlayMenu.pushHistory(stuff);
     outputField.clear();
-    insert(stuff);
+    int roundTo = overlayMenu.getRoundTo();
+    if (stuff.length() > roundTo) {
+      double d = Double.parseDouble(stuff);
+      BigDecimal bd = new BigDecimal(d);
+      bd = bd.setScale(roundTo, RoundingMode.HALF_UP);
+      insert(bd.toString());
+    } else {
+      insert(stuff);
+    }
   }
 
   private void delete() {
@@ -111,6 +144,7 @@ public class Main extends Application {
     double d;
     try {
       d = SimpleParser.parse(outputField.getText());
+      overlayMenu.pushHistory(specialOperation + " ->" + outputField.getText());
     } catch (Exception e) {
       error(e);
       return;
@@ -124,9 +158,13 @@ public class Main extends Application {
       break;
       case "!": faculty(d);
       break;
-      case "N": negative(d);
+      case "ln": ln(d);
       break;
-      default: throw new UnsupportedOperationException("Unsupported Operation detected");
+      case "log10": log10(d);
+      break;
+      case "1/X": fraction(d);
+      break;
+      default: error(new UnsupportedOperationException("Unsupported Operation detected"));
     }
   }
 
@@ -146,10 +184,6 @@ public class Main extends Application {
     }
   }
 
-  private void negative(double d) {
-    clearAndInsert(String.valueOf(d * -1));
-  }
-
   private void faculty(double d) {
     if (d > 170) {
       error(new IllegalArgumentException("My friend, the value is too big for me"));
@@ -163,9 +197,24 @@ public class Main extends Application {
     }
   }
 
+  private void ln(double d) {
+    if (d < 0) {
+      error(new IllegalArgumentException("My friend, the ln is not defined below zero"));
+    }
+    clearAndInsert(String.valueOf(Math.log(d)));
+  }
+
+  private void log10(double d) {
+    clearAndInsert(String.valueOf(Math.log10(d)));
+  }
+
+  private void fraction(double d) {
+    clearAndInsert(String.valueOf(1/d));
+  }
+
   private double facultyHelper(double a) throws IllegalArgumentException {
     if (a < 0) {
-      throw new IllegalArgumentException("My friend, faculty is only for positive or zero");
+      error(new IllegalArgumentException("My friend, faculty is only for positive or zero"));
     }
     return a <= 1 ? 1 : a * facultyHelper(a - 1);
   }
@@ -173,6 +222,7 @@ public class Main extends Application {
   private void calculate()  {
     try {
       double result = SimpleParser.parse(outputField.getText());
+      overlayMenu.pushHistory(outputField.getText());
       clearAndInsert(String.valueOf(result));
     } catch (Exception e) {
       error(e);
