@@ -13,7 +13,6 @@ public class CalcButton extends Button {
   /**
    * Constructor that adds this instance in the gridpane according to the r and c.
    */
-
   public CalcButton(String sign, int r, int c, GridPane gridPane) {
     setText(sign);
     gridPane.add(this, r, c);

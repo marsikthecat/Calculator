@@ -3,14 +3,16 @@
     -fx-pref-width: 320;
     -fx-pref-height: 480;
 }
-
 .overlay Label {
-  -fx-font-size: 20;
+  -fx-font-size: 22;
 }
-
-.overlay HBox Label {
-  -fx-font-size: 14;
+.overlay VBox Label {
+  -fx-font-size: 18;
+  -fx-padding: 10px 0 10px 0;
 }
-.overlay HBox TextField {
-  -fx-pref-width: 60;
+.overlay VBox HBox Label {
+  -fx-font-size: 15;
+}
+.overlay VBox TextField {
+  -fx-pref-width: 130;
 }

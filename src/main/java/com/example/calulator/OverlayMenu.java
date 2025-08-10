@@ -1,22 +1,39 @@
 package com.example.calulator;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+/**
+ * A menu which offeres more options for instance convertion, history and rounding settings.
+ */
+
 public class OverlayMenu extends VBox {
   private int roundTo = 8;
   private final ObservableList<String> history = FXCollections.observableArrayList();
-  private boolean updatingTemperature = false;
+  private boolean speedChanged = false;
+  private boolean tempChanged = false;
+  private boolean lengthChanged = false;
+  private boolean weightChanged = false;
+
+  /**
+   * Sets up all the headlines, slider, historyListview and the boxes with convertion themes.
+   */
 
   public OverlayMenu() {
-    Label closeLable = new Label("X");
+    Label closeLable = new Label("✖");
     closeLable.setOnMouseClicked(e -> setVisible(false));
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -25,22 +42,20 @@ public class OverlayMenu extends VBox {
     closeNav.getChildren().addAll(spacer, closeLable);
 
 
-    Label settings = new Label("⚙" + " Settings: ");
     Label roundToDecimalPoint = new Label();
     Spinner<Integer> intSpinner = new Spinner<>(0, 16, 8);
     intSpinner.valueProperty().addListener((obs, oldVal, newVal) -> roundTo = newVal);
-    roundToDecimalPoint.textProperty().bind(Bindings.concat("Round numbers to: ", intSpinner.valueProperty()));
+    roundToDecimalPoint.textProperty().bind(
+            Bindings.concat("Round numbers to: ", intSpinner.valueProperty()));
 
-    Label history = new Label("⏳" + " History:" );
+    Label history = new Label("⏳" + " History:");
     ListView<String> historyView = new ListView<>(this.history);
 
     Label converter = new Label("<->" + " Converter: ");
 
-    Label geometry = new Label("Geometry: ");
-
     VBox content = new VBox();
-    content.getChildren().addAll(settings, roundToDecimalPoint, intSpinner, history, historyView, converter,
-            speedBox(), temperatureBox(), geometry, sphereBox());
+    content.getChildren().addAll(roundToDecimalPoint, intSpinner, history, historyView, converter,
+            speedBox(), temperatureBox(), lenghBox(), weightBox(), sphereBox());
 
     ScrollPane scrollPane = new ScrollPane(content);
     scrollPane.setFitToWidth(true);
@@ -53,170 +68,338 @@ public class OverlayMenu extends VBox {
     return roundTo;
   }
 
+  /**
+   * the calculation-input or an expression with the corresponding operation applied,
+   * gets added in the historyListView. It is not permantent, like a sessionstorage.
+   */
   public void pushHistory(String expr) {
     history.add(expr);
   }
 
-  private HBox speedBox() {
-    HBox hBox = new HBox();
-    hBox.setPadding(new Insets(10, 5, 10, 5));
-    Label speed = new Label("Km/h to m/s: ");
-    TextField input = new TextField();
-    TextField result = new TextField();
-    input.textProperty().addListener(((observableValue, oldVal, newVal) -> {
-      if (!newVal.isEmpty()) {
-        try {
-          double d = Double.parseDouble(newVal);
-          result.setText(String.valueOf(d / 3.6));
-        } catch (Exception exception) {
-          result.setText("");
-        }
-      } else {
-        result.setText("");
+  private VBox speedBox() {
+    VBox speedBox = new VBox(10);
+    speedBox.setPadding(new Insets(10));
+
+    TextField inputKm = new TextField();
+    TextField inputMs = new TextField();
+    TextField inputMph = new TextField();
+    TextField inputMach = new TextField();
+
+    speedBox.getChildren().addAll(
+            new Label("Speed: "),
+            new HBox(5, new Label("Km/h:"), inputKm),
+            new HBox(5, new Label("M/s:"), inputMs),
+            new HBox(5, new Label("Mph:"), inputMph),
+            new HBox(5, new Label("Mach:"), inputMach)
+    );
+
+    ChangeListener<String> speedListener = (observableValue, oldVal, newVal) -> {
+      TextField source = (TextField) ((StringProperty) observableValue).getBean();
+      if (speedChanged) {
+        return;
       }
-    }));
-    hBox.getChildren().addAll(speed, input, result);
-    return hBox;
+      if (newVal.isEmpty()) {
+        inputKm.clear();
+        inputMs.clear();
+        inputMph.clear();
+        inputMach.clear();
+        return;
+      }
+      try {
+        double val = Double.parseDouble(newVal);
+        speedChanged = true;
+        if (source == inputKm) {
+          inputMs.setText(String.valueOf(val / 3.6));
+          inputMph.setText(String.valueOf(val * 0.6214268));
+          inputMach.setText(String.valueOf(val / 1225.08));
+        } else if (source == inputMs) {
+          inputKm.setText(String.valueOf(val * 3.6));
+          inputMph.setText(String.valueOf(val * 2.23713648));
+          inputMach.setText(String.valueOf(val * 0.0029385836));
+        } else if (source == inputMph) {
+          inputKm.setText(String.valueOf(val * 1.6092));
+          inputMs.setText(String.valueOf(val * 0.447));
+          inputMach.setText(String.valueOf(val * 0.001314));
+        } else if (source == inputMach) {
+          inputKm.setText(String.valueOf(val * 1225.08));
+          inputMs.setText(String.valueOf(val * 340.3));
+          inputMph.setText(String.valueOf(val * 761.2975));
+        }
+      } catch (NumberFormatException e) {
+        inputKm.clear();
+        inputMs.clear();
+        inputMph.clear();
+        inputMach.clear();
+      } finally {
+        speedChanged = false;
+      }
+    };
+    inputKm.textProperty().addListener(speedListener);
+    inputMs.textProperty().addListener(speedListener);
+    inputMph.textProperty().addListener(speedListener);
+    inputMach.textProperty().addListener(speedListener);
+    return speedBox;
+  }
+
+  private VBox lenghBox() {
+    VBox lenghBox = new VBox(10);
+    lenghBox.setPadding(new Insets(10));
+
+    TextField nanoMeter = new TextField();
+    TextField mikrometer = new TextField();
+    TextField millimeter = new TextField();
+    TextField centimeter = new TextField();
+    TextField meter = new TextField();
+    TextField kilometer = new TextField();
+    TextField lightYear = new TextField();
+
+    lenghBox.getChildren().addAll(
+            new Label("Length: "),
+            new HBox(5, new Label("Nanometer: "), nanoMeter),
+            new HBox(5, new Label("Micrometer: "), mikrometer),
+            new HBox(5, new Label("Millimeter: "), millimeter),
+            new HBox(5, new Label("Centimeter: "), centimeter),
+            new HBox(5, new Label("Meter: "), meter),
+            new HBox(5, new Label("Kilometer: "), kilometer),
+            new HBox(5, new Label("Light year: "), lightYear)
+    );
+
+    ChangeListener<String> lengthListener = (observableValue, oldVal, newVal) -> {
+      TextField source = (TextField) ((StringProperty) observableValue).getBean();
+      if (lengthChanged) {
+        return;
+      }
+      if (newVal.isEmpty()) {
+        nanoMeter.clear();
+        mikrometer.clear();
+        millimeter.clear();
+        centimeter.clear();
+        meter.clear();
+        kilometer.clear();
+        lightYear.clear();
+        return;
+      }
+      try {
+        double length = Double.parseDouble(newVal);
+        lengthChanged = true;
+        if (source == nanoMeter) {
+          mikrometer.setText(String.valueOf(length / 1e3));
+          millimeter.setText(String.valueOf(length / 1e6));
+          centimeter.setText(String.valueOf(length / 1e7));
+          meter.setText(String.valueOf(length / 1e9));
+          kilometer.setText(String.valueOf(length / 1e12));
+          lightYear.setText(String.valueOf(length /  9.4607e24));
+        } else if (source == mikrometer) {
+          nanoMeter.setText(String.valueOf(length * 1000));
+          millimeter.setText(String.valueOf(length / 1000));
+          centimeter.setText(String.valueOf(length / 10000));
+          meter.setText(String.valueOf(length / 1000000));
+          kilometer.setText(String.valueOf(length / 1000000000));
+          lightYear.setText(String.valueOf(length /  9.4607e21));
+        } else if (source == millimeter) {
+          nanoMeter.setText(String.valueOf(length * 1000000));
+          mikrometer.setText(String.valueOf(length * 1000));
+          centimeter.setText(String.valueOf(length / 10));
+          meter.setText(String.valueOf(length / 1000));
+          kilometer.setText(String.valueOf(length / 1000000));
+          lightYear.setText(String.valueOf(length /  9.4607e18));
+        } else if (source == centimeter) {
+          nanoMeter.setText(String.valueOf(length * 10000000));
+          mikrometer.setText(String.valueOf(length * 10000));
+          millimeter.setText(String.valueOf(length * 10));
+          meter.setText(String.valueOf(length / 100));
+          kilometer.setText(String.valueOf(length / 100000));
+          lightYear.setText(String.valueOf(length /  9.4607e17));
+        } else if (source == meter) {
+          nanoMeter.setText(String.valueOf(length * 1000000000));
+          mikrometer.setText(String.valueOf(length * 1000000));
+          millimeter.setText(String.valueOf(length * 1000));
+          centimeter.setText(String.valueOf(length * 100));
+          kilometer.setText(String.valueOf(length / 1000));
+          lightYear.setText(String.valueOf(length / 9.4607e15));
+        } else if (source == kilometer) {
+          nanoMeter.setText(String.valueOf(length * 1e12));
+          mikrometer.setText(String.valueOf(length * 1e9));
+          millimeter.setText(String.valueOf(length * 100000));
+          centimeter.setText(String.valueOf(length * 10000));
+          meter.setText(String.valueOf(length * 1000));
+          lightYear.setText(String.valueOf(length / 9.4607e12));
+        } else if (source == lightYear) {
+          nanoMeter.setText(String.valueOf(length / 9.4607e24));
+          mikrometer.setText(String.valueOf(length / 9.4607e21));
+          millimeter.setText(String.valueOf(length / 9.4607e18));
+          centimeter.setText(String.valueOf(length / 9.4607e17));
+          meter.setText(String.valueOf(length / 9.4607e15));
+          kilometer.setText(String.valueOf(length * 9.4607e12));
+        }
+      } catch (NumberFormatException e) {
+        nanoMeter.clear();
+        mikrometer.clear();
+        millimeter.clear();
+        centimeter.clear();
+        meter.clear();
+        kilometer.clear();
+        lightYear.clear();
+      } finally {
+        lengthChanged = false;
+      }
+    };
+    nanoMeter.textProperty().addListener(lengthListener);
+    mikrometer.textProperty().addListener(lengthListener);
+    millimeter.textProperty().addListener(lengthListener);
+    centimeter.textProperty().addListener(lengthListener);
+    meter.textProperty().addListener(lengthListener);
+    kilometer.textProperty().addListener(lengthListener);
+    lightYear.textProperty().addListener(lengthListener);
+    return lenghBox;
   }
 
   private VBox temperatureBox() {
-    VBox temperatureBox = new VBox();
-    temperatureBox.setPadding(new Insets(10, 5, 10, 5));
+    VBox temperatureBox = new VBox(10);
+    temperatureBox.setPadding(new Insets(10));
 
-    Label celsiusLabel = new Label("C°: ");
     TextField inputCelsius = new TextField();
-    HBox celsiusBox = new HBox(celsiusLabel, inputCelsius);
-
-    Label fahrenheitLabel = new Label("F°: ");
     TextField inputFahrenheit = new TextField();
-    HBox fahrenheitBox = new HBox(fahrenheitLabel, inputFahrenheit);
-
-    Label kelvinLabel = new Label("K°: ");
     TextField inputKelvin = new TextField();
-    HBox kelvinBox = new HBox(kelvinLabel, inputKelvin);
 
-    inputCelsius.textProperty().addListener((obs, oldVal, newVal) -> {
-      if (updatingTemperature) {
+    temperatureBox.getChildren().addAll(
+            new Label("Temperature: "),
+            new HBox(5, new Label("C°:"), inputCelsius),
+            new HBox(5, new Label("F°:"), inputFahrenheit),
+            new HBox(5, new Label("K°:"), inputKelvin)
+    );
+
+    ChangeListener<String> temperaturListener = (observableValue, oldVal, newVal) -> {
+      TextField source = (TextField) ((StringProperty) observableValue).getBean();
+      if (tempChanged) {
         return;
       }
-      try {
-        if (!newVal.isEmpty()) {
-          double c = Double.parseDouble(newVal);
-          updatingTemperature = true;
-          inputKelvin.setText(String.valueOf(c + 273.15));
-          inputFahrenheit.setText(String.valueOf(c * 9 / 5 + 32));
-        } else {
-          updatingTemperature = true;
-          inputKelvin.clear();
-          inputFahrenheit.clear();
-        }
-      } catch (NumberFormatException e) {
-        updatingTemperature = true;
-        inputKelvin.clear();
-        inputFahrenheit.clear();
-      } finally {
-        updatingTemperature = false;
-      }
-    });
-
-    inputKelvin.textProperty().addListener((obs, oldVal, newVal) -> {
-      if (updatingTemperature) {
-        return;
-      }
-      try {
-        if (!newVal.isEmpty()) {
-          double k = Double.parseDouble(newVal);
-          updatingTemperature = true;
-          inputCelsius.setText(String.valueOf(k - 273.15));
-          inputFahrenheit.setText(String.valueOf((k - 273.15) * 9 / 5 + 32));
-        } else {
-          updatingTemperature = true;
-          inputCelsius.clear();
-          inputFahrenheit.clear();
-        }
-      } catch (NumberFormatException e) {
-        updatingTemperature = true;
+      if (newVal.isEmpty()) {
         inputCelsius.clear();
         inputFahrenheit.clear();
-      } finally {
-        updatingTemperature = false;
-      }
-    });
-
-    inputFahrenheit.textProperty().addListener((obs, oldVal, newVal) -> {
-      if (updatingTemperature) {
+        inputKelvin.clear();
         return;
       }
       try {
-        if (!newVal.isEmpty()) {
-          double f = Double.parseDouble(newVal);
-          updatingTemperature = true;
-          inputCelsius.setText(String.valueOf((f - 32) * 5 / 9));
-          inputKelvin.setText(String.valueOf((f - 32) * 5 / 9 + 273.15));
-        } else {
-          updatingTemperature = true;
-          inputCelsius.clear();
-          inputKelvin.clear();
+        tempChanged = true;
+        double temperature = Double.parseDouble(newVal);
+        if (source == inputCelsius) {
+          inputKelvin.setText(String.valueOf(temperature + 273.15));
+          inputFahrenheit.setText(String.valueOf(temperature * 9 / 5 + 32));
+        } else if (source == inputFahrenheit) {
+          inputCelsius.setText(String.valueOf((temperature - 32) * 5 / 9));
+          inputKelvin.setText(String.valueOf((temperature - 32) * 5 / 9 + 273.15));
+        } else if (source == inputKelvin) {
+          inputCelsius.setText(String.valueOf(temperature - 273.15));
+          inputFahrenheit.setText(String.valueOf((temperature - 273.15) * 9 / 5 + 32));
         }
       } catch (NumberFormatException e) {
-        updatingTemperature = true;
         inputCelsius.clear();
+        inputFahrenheit.clear();
         inputKelvin.clear();
       } finally {
-        updatingTemperature = false;
+        tempChanged = false;
       }
-    });
-    temperatureBox.getChildren().addAll(celsiusBox, fahrenheitBox, kelvinBox);
+    };
+    inputCelsius.textProperty().addListener(temperaturListener);
+    inputKelvin.textProperty().addListener(temperaturListener);
+    inputFahrenheit.textProperty().addListener(temperaturListener);
     return temperatureBox;
   }
 
+  private VBox weightBox() {
+    VBox weightBox = new VBox(10);
+    weightBox.setPadding(new Insets(10));
+
+    TextField inputGramm = new TextField();
+    TextField inputKilogramm = new TextField();
+    TextField inputPound = new TextField();
+
+    weightBox.getChildren().addAll(
+            new Label("Weight: "),
+            new HBox(5, new Label("Gramm g:"), inputGramm),
+            new HBox(5, new Label("Kilogramm Kg:"), inputKilogramm),
+            new HBox(5, new Label("Pfund Ib°:"), inputPound)
+    );
+
+    ChangeListener<String> weightListener = (observableValue, oldVal, newVal) -> {
+      TextField source = (TextField) ((StringProperty) observableValue).getBean();
+      if (weightChanged) {
+        return;
+      }
+      if (newVal.isEmpty()) {
+        inputGramm.clear();
+        inputKilogramm.clear();
+        inputPound.clear();
+        return;
+      }
+      try {
+        weightChanged = true;
+        double weight = Double.parseDouble(newVal);
+        if (source == inputGramm) {
+          inputPound.setText(String.valueOf((weight / 1000) * 2.204623));
+          inputKilogramm.setText(String.valueOf(weight / 1000));
+        } else if (source == inputKilogramm) {
+          inputGramm.setText(String.valueOf(weight * 1000));
+          inputPound.setText(String.valueOf(weight * 2.204623));
+        } else if (source == inputPound) {
+          inputGramm.setText(String.valueOf((weight / 2.204623) * 1000));
+          inputKilogramm.setText(String.valueOf(weight / 2.204623));
+        }
+      } catch (NumberFormatException e) {
+        inputGramm.clear();
+        inputKilogramm.clear();
+        inputPound.clear();
+      } finally {
+        weightChanged = false;
+      }
+    };
+    inputGramm.textProperty().addListener(weightListener);
+    inputPound.textProperty().addListener(weightListener);
+    inputKilogramm.textProperty().addListener(weightListener);
+    return weightBox;
+  }
+
   private VBox sphereBox() {
-    VBox sphereBox = new VBox();
-    sphereBox.setPadding(new Insets(10, 5, 10, 5));
+    VBox sphereBox = new VBox(10);
+    sphereBox.setPadding(new Insets(10));
 
-    Label radius = new Label("Radius of the Sphere/circle: ");
-    TextField radiusInput = new TextField();
-    HBox inputBox = new HBox(radius, radiusInput);
-
-    Label circleAreaLabel = new Label("Circle Area: ");
+    TextField inputRadius = new TextField();
     TextField circleArea = new TextField();
-    HBox circleAreaBox = new HBox(circleAreaLabel, circleArea);
-
-    Label circumferenceLabel = new Label("Circumference of Circle: ");
     TextField circumference = new TextField();
-    HBox circumfercenceBox = new HBox(circumferenceLabel, circumference);
-
-    Label sphereSurfaceAreaLabel = new Label("SurfaceArea of Sphere: ");
     TextField sphereSurfaceArea = new TextField();
-    HBox sphereSurfaceAreaBox = new HBox(sphereSurfaceAreaLabel, sphereSurfaceArea);
-
-    Label sphereVolumeLabel = new Label("Volume of Sphere: ");
     TextField sphereVolume = new TextField();
-    HBox sphereVolumeBox = new HBox(sphereVolumeLabel, sphereVolume);
 
-    radiusInput.textProperty().addListener(((observableValue, oldVal, newVal) -> {
+    sphereBox.getChildren().addAll(
+            new Label("Geometry: "),
+            new HBox(5, new Label("Circle/Sphere-radius: "), inputRadius),
+            new HBox(5, new Label("Circle Area: "), circleArea),
+            new HBox(5, new Label("Circumference: "), circumference),
+            new HBox(5, new Label("Surface area: "), sphereSurfaceArea),
+            new HBox(5, new Label("Volume: "), sphereVolume)
+    );
+
+    inputRadius.textProperty().addListener(((observableValue, oldVal, newVal) -> {
       if (!newVal.isEmpty()) {
         try {
           double d = Double.parseDouble(newVal);
-          circleArea.setText(String.valueOf(Math.PI*d*d));
-          circumference.setText(String.valueOf(2*Math.PI*d));
-          sphereSurfaceArea.setText(String.valueOf(4*Math.PI*d*d));
-          sphereVolume.setText(String.valueOf((double) 4/3*Math.PI*d*d*d));
+          circleArea.setText(String.valueOf(Math.PI * d * d));
+          circumference.setText(String.valueOf(2 * Math.PI * d));
+          sphereSurfaceArea.setText(String.valueOf(4 * Math.PI * d * d));
+          sphereVolume.setText(String.valueOf((double) 4 / 3 * Math.PI * d * d * d));
         } catch (Exception exception) {
-          circleArea.setText("");
-          circumference.setText("");
-          sphereSurfaceArea.setText("");
-          sphereVolume.setText("");
+          circleArea.clear();
+          circumference.clear();
+          sphereSurfaceArea.clear();
+          sphereVolume.clear();
         }
       } else {
-        circleArea.setText("");
-        circumference.setText("");
-        sphereSurfaceArea.setText("");
-        sphereVolume.setText("");
+        circleArea.clear();
+        circumference.clear();
+        sphereSurfaceArea.clear();
+        sphereVolume.clear();
       }
     }));
-    sphereBox.getChildren().addAll(inputBox, circleAreaBox, circumfercenceBox,
-            sphereSurfaceAreaBox, sphereVolumeBox );
     return sphereBox;
   }
 }

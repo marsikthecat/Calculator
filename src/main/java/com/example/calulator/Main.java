@@ -1,5 +1,8 @@
 package com.example.calulator;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -8,27 +11,32 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Objects;
 
 /**
  * Simple Calculator.
- * Main: 196 lines.
- * CalcButton: 30 lines.
+ * Main: 251 lines.
+ * CalcButton: 38 lines.
  * SimpleParser: 111 lines.
- * 337 lines.
+ * OverlayMenu: 405 lines.
+ * 805 lines + 18 lines css = 823 lines.
  */
 
 public class Main extends Application {
 
   private TextField outputField;
-  private final String[][] symbols = {{"ln", "mod", "x³", "√", "x²", "log10"}, {"e", "(", "7", "4", "1", "1/X"},
-    {"π",")", "8", "5", "2", "0"}, {"C", "!", "9", "6", "3", "."}, {">", "/", "*", "+", "-", "="}};
+  private final String[][] symbols = {
+          {"ln", "mod", "x³", "√", "x²", "log10"},
+          {"e", "(", "7", "4", "1", "1/X"},
+          {"π", ")", "8", "5", "2", "0"},
+          {"C", "!", "9", "6", "3", "."},
+          {">", "/", "*", "+", "-", "="}};
 
   private final OverlayMenu overlayMenu = new OverlayMenu();
 
@@ -102,7 +110,8 @@ public class Main extends Application {
         switch (symbol) {
           case "C" -> button.act(() -> outputField.clear());
           case ">" -> button.act(this::delete);
-          case "√", "x²", "x³", "!", "ln", "mod", "log10", "1/X" ->  button.act(() -> calcExp(symbol));
+          case "√", "x²", "x³", "!", "ln", "mod", "log10", "1/X" ->
+              button.act(() -> calcExp(symbol));
           case "=" -> button.act(this::calculate);
           case "π" -> button.act(() -> insert("3.141529"));
           case "e" -> button.act(() -> insert("2.718128"));
@@ -206,7 +215,7 @@ public class Main extends Application {
   }
 
   private void fraction(double d) {
-    clearAndInsert(String.valueOf(1/d));
+    clearAndInsert(String.valueOf(1 / d));
   }
 
   private double facultyHelper(double a) throws IllegalArgumentException {
