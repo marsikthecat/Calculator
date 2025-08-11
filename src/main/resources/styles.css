@@ -8,7 +8,6 @@
 }
 .overlay VBox Label {
   -fx-font-size: 18;
-  -fx-padding: 10px 0 10px 0;
 }
 .overlay VBox HBox Label {
   -fx-font-size: 15;

@@ -319,7 +319,7 @@ public class OverlayMenu extends VBox {
             new Label("Weight: "),
             new HBox(5, new Label("Gramm g:"), inputGramm),
             new HBox(5, new Label("Kilogramm Kg:"), inputKilogramm),
-            new HBox(5, new Label("Pfund Ib°:"), inputPound)
+            new HBox(5, new Label("Pfund Ib:"), inputPound)
     );
 
     ChangeListener<String> weightListener = (observableValue, oldVal, newVal) -> {

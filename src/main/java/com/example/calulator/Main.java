@@ -21,23 +21,22 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
- * Main: 251 lines.
- * CalcButton: 38 lines.
- * SimpleParser: 111 lines.
+ * Main: 260 lines.
+ * CalcButton: 40 lines.
+ * SimpleParser: 138 lines.
  * OverlayMenu: 405 lines.
- * 805 lines + 18 lines css = 823 lines.
+ * 843 lines + 17 lines css = 862 lines.
  */
 
 public class Main extends Application {
 
   private TextField outputField;
   private final String[][] symbols = {
-          {"ln", "mod", "x³", "√", "x²", "log10"},
+          {"ln", "^", "x³", "√", "x²", "log10"},
           {"e", "(", "7", "4", "1", "1/X"},
           {"π", ")", "8", "5", "2", "0"},
           {"C", "!", "9", "6", "3", "."},
           {">", "/", "*", "+", "-", "="}};
-
   private final OverlayMenu overlayMenu = new OverlayMenu();
 
   @Override
@@ -110,7 +109,7 @@ public class Main extends Application {
         switch (symbol) {
           case "C" -> button.act(() -> outputField.clear());
           case ">" -> button.act(this::delete);
-          case "√", "x²", "x³", "!", "ln", "mod", "log10", "1/X" ->
+          case "√", "x²", "x³", "!", "ln", "log10", "1/X" ->
               button.act(() -> calcExp(symbol));
           case "=" -> button.act(this::calculate);
           case "π" -> button.act(() -> insert("3.141529"));
@@ -183,10 +182,10 @@ public class Main extends Application {
   }
 
   private void sqrt(double d) {
-    if (d > 0) {
+    if (d >= 0) {
       clearAndInsert(String.valueOf(Math.sqrt(d)));
     } else {
-      clearAndInsert(Math.sqrt(Math.abs(d)) + "i");
+      error(new IllegalArgumentException("My friend, negative square root are not defined"));
     }
   }
 
@@ -204,17 +203,26 @@ public class Main extends Application {
   }
 
   private void ln(double d) {
-    if (d < 0) {
-      error(new IllegalArgumentException("My friend, the ln is not defined below zero"));
+    if (d <= 0) {
+      error(new IllegalArgumentException("My friend, the ln is not defined below or at zero"));
+      return;
     }
     clearAndInsert(String.valueOf(Math.log(d)));
   }
 
   private void log10(double d) {
+    if (d <= 0) {
+      error(new IllegalArgumentException("My friend, the log10 is not defined below or at zero"));
+      return;
+    }
     clearAndInsert(String.valueOf(Math.log10(d)));
   }
 
   private void fraction(double d) {
+    if (d == 0) {
+      error(new IllegalArgumentException("My friend, you cannot devide by zero"));
+      return;
+    }
     clearAndInsert(String.valueOf(1 / d));
   }
 

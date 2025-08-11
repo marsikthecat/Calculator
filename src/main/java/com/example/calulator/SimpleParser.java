@@ -1,7 +1,7 @@
 package com.example.calulator;
 
 /**
- * This is a parser which parser arithmetic expressions. Nice, huh?.
+ * This is a parser which parses arithmetic expressions. Nice, huh?.
  */
 
 public class SimpleParser {
@@ -18,7 +18,7 @@ public class SimpleParser {
   }
 
   /**
-   * Expression.
+   * Handles + - expressions.
    */
   public static double expression() throws Exception {
     double val = term();
@@ -34,23 +34,50 @@ public class SimpleParser {
   }
 
   /**
-   * Term.
+   * Handels * / expressions.
    */
   public static double term() throws Exception {
-    double val = factor();
+    double val = power();
     while (hasNextChar() && (peek() == '*' || peek() == '/')) {
       char op = getNextChar();
       if (op == '*') {
-        val *= factor();
+        val *= power();
       } else {
-        val /= factor();
+        val /= power();
       }
     }
     return val;
   }
 
   /**
-   * Factor.
+   * Powerranger.
+   */
+  private static double power() throws Exception {
+    double val = signedFactor();
+    while (hasNextChar() && peek() == '^') {
+      getNextChar();
+      val = Math.pow(val, power());
+    }
+    return val;
+  }
+
+  /**
+   * Handle signed Factores like (-2)... .
+   */
+  public static double signedFactor() throws Exception {
+    if (peek() == '+') {
+      getNextChar();
+      return factor();
+    } else if (peek() == '-') {
+      getNextChar();
+      return -factor();
+    } else {
+      return factor();
+    }
+  }
+
+  /**
+   * Handels factors.
    */
   public static double factor() throws Exception {
     if (!hasNextChar()) {
@@ -64,7 +91,7 @@ public class SimpleParser {
   }
 
   /**
-    * Braces.
+    * Handels branced Expressions.
    */
   public static double bracedExpression() throws Exception {
     if (getNextChar() != '(') {
@@ -78,7 +105,7 @@ public class SimpleParser {
   }
 
   /**
-    * Number.
+    * Looks for Numbers and parses them.
   */
   public static double number() throws Exception {
     StringBuilder sb = new StringBuilder();

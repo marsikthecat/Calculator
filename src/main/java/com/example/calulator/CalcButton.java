@@ -18,14 +18,16 @@ public class CalcButton extends Button {
     gridPane.add(this, r, c);
     setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-border-width: 0");
+    setOnMouseEntered(e -> setStyle("-fx-background-color: #b6b6b6; -fx-text-fill: black; -fx-border-width: 0"));
+    setOnMouseExited(e -> setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-border-width: 0"));
     if (sign.length() == 1) {
       setFont(new Font(25));
     } else if (sign.length() == 2) {
       setFont(new Font(23));
     } else if (sign.length() == 3) {
-      setFont(new Font(18));
+      setFont(new Font(19));
     } else if (sign.length() == 4) {
-      setFont(new Font(14));
+      setFont(new Font(16));
     }
   }
 
