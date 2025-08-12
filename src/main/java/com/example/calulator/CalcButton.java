@@ -15,19 +15,32 @@ public class CalcButton extends Button {
    */
   public CalcButton(String sign, int r, int c, GridPane gridPane) {
     setText(sign);
-    gridPane.add(this, r, c);
-    setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    gridPane.add(this, c, r);
+    setMinSize(50, 50);
+    setMaxSize(50, 50);
     setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-border-width: 0");
-    setOnMouseEntered(e -> setStyle("-fx-background-color: #b6b6b6; -fx-text-fill: black; -fx-border-width: 0"));
-    setOnMouseExited(e -> setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-border-width: 0"));
+    setOnMouseEntered(e -> setStyle("-fx-background-color: #b6b6b6; -fx-text-fill: black;"
+            + " -fx-border-width: 0"));
+    setOnMouseExited(e -> setStyle("-fx-background-color: white; -fx-text-fill: black; "
+            + "-fx-border-width: 0"));
     if (sign.length() == 1) {
-      setFont(new Font(25));
-    } else if (sign.length() == 2) {
-      setFont(new Font(23));
-    } else if (sign.length() == 3) {
-      setFont(new Font(19));
-    } else if (sign.length() == 4) {
-      setFont(new Font(16));
+      setFont(Font.font(24));
+    } else if (sign.equals("x²") || sign.equals("x³") || sign.equals("x!") || sign.equals("ln")
+            || sign.equals("eˣ") || sign.equals("2ˣ")) {
+      setFont(Font.font(22));
+    } else if (sign.equals("10ˣ") || sign.equals("sin") || sign.equals("tan")) {
+      setFont(Font.font(18));
+    } else if (sign.equals("cos") || sign.equals("rad") || sign.equals("³√x")
+            || sign.equals("1/X")) {
+      setFont(Font.font(17));
+    } else if (sign.equals("deg")) {
+      setFont(Font.font(16));
+    } else if (sign.equals("sin⁻¹")) {
+      setFont(Font.font(15));
+    } else if (sign.equals("cos⁻¹") || sign.equals("tan⁻¹")) {
+      setFont(Font.font(14));
+    } else {
+      setFont(Font.font(13));
     }
   }
 

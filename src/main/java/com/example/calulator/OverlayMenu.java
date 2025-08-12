@@ -1,6 +1,5 @@
 package com.example.calulator;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -23,10 +22,7 @@ import javafx.scene.layout.VBox;
 public class OverlayMenu extends VBox {
   private int roundTo = 8;
   private final ObservableList<String> history = FXCollections.observableArrayList();
-  private boolean speedChanged = false;
-  private boolean tempChanged = false;
-  private boolean lengthChanged = false;
-  private boolean weightChanged = false;
+  private boolean valChanged = false;
 
   /**
    * Sets up all the headlines, slider, historyListview and the boxes with convertion themes.
@@ -41,21 +37,25 @@ public class OverlayMenu extends VBox {
     closeNav.setPadding(new Insets(5));
     closeNav.getChildren().addAll(spacer, closeLable);
 
-
-    Label roundToDecimalPoint = new Label();
+    Label roundToDecimalPoint = new Label("Round numbers to: ");
     Spinner<Integer> intSpinner = new Spinner<>(0, 16, 8);
+    intSpinner.setPrefWidth(60);
     intSpinner.valueProperty().addListener((obs, oldVal, newVal) -> roundTo = newVal);
-    roundToDecimalPoint.textProperty().bind(
-            Bindings.concat("Round numbers to: ", intSpinner.valueProperty()));
+    HBox roundingSettingsBox = new HBox(10, roundToDecimalPoint, intSpinner);
+    roundingSettingsBox.setPadding(new Insets(0, 0, 0, 10));
 
-    Label history = new Label("⏳" + " History:");
-    ListView<String> historyView = new ListView<>(this.history);
+    Label historyLabel = new Label("⏳" + " History:");
+    historyLabel.setPadding(new Insets(0, 0, 0, 10));
+    ListView<String> listView = new ListView<>(this.history);
+    listView.setFocusTraversable(false);
+    VBox historyBox = new VBox(historyLabel, listView);
 
     Label converter = new Label("<->" + " Converter: ");
+    converter.setPadding(new Insets(0, 0, 0, 10));
 
-    VBox content = new VBox();
-    content.getChildren().addAll(roundToDecimalPoint, intSpinner, history, historyView, converter,
-            speedBox(), temperatureBox(), lenghBox(), weightBox(), sphereBox());
+    VBox content = new VBox(10);
+    content.getChildren().addAll(roundingSettingsBox, historyBox, converter,
+            speedBox(), temperatureBox(), lenghBox(), weightBox(), sphereBox(), cubeBox());
 
     ScrollPane scrollPane = new ScrollPane(content);
     scrollPane.setFitToWidth(true);
@@ -95,7 +95,7 @@ public class OverlayMenu extends VBox {
 
     ChangeListener<String> speedListener = (observableValue, oldVal, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
-      if (speedChanged) {
+      if (valChanged) {
         return;
       }
       if (newVal.isEmpty()) {
@@ -107,7 +107,7 @@ public class OverlayMenu extends VBox {
       }
       try {
         double val = Double.parseDouble(newVal);
-        speedChanged = true;
+        valChanged = true;
         if (source == inputKm) {
           inputMs.setText(String.valueOf(val / 3.6));
           inputMph.setText(String.valueOf(val * 0.6214268));
@@ -131,7 +131,7 @@ public class OverlayMenu extends VBox {
         inputMph.clear();
         inputMach.clear();
       } finally {
-        speedChanged = false;
+        valChanged = false;
       }
     };
     inputKm.textProperty().addListener(speedListener);
@@ -166,7 +166,7 @@ public class OverlayMenu extends VBox {
 
     ChangeListener<String> lengthListener = (observableValue, oldVal, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
-      if (lengthChanged) {
+      if (valChanged) {
         return;
       }
       if (newVal.isEmpty()) {
@@ -181,7 +181,7 @@ public class OverlayMenu extends VBox {
       }
       try {
         double length = Double.parseDouble(newVal);
-        lengthChanged = true;
+        valChanged = true;
         if (source == nanoMeter) {
           mikrometer.setText(String.valueOf(length / 1e3));
           millimeter.setText(String.valueOf(length / 1e6));
@@ -241,7 +241,7 @@ public class OverlayMenu extends VBox {
         kilometer.clear();
         lightYear.clear();
       } finally {
-        lengthChanged = false;
+        valChanged = false;
       }
     };
     nanoMeter.textProperty().addListener(lengthListener);
@@ -271,7 +271,7 @@ public class OverlayMenu extends VBox {
 
     ChangeListener<String> temperaturListener = (observableValue, oldVal, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
-      if (tempChanged) {
+      if (valChanged) {
         return;
       }
       if (newVal.isEmpty()) {
@@ -281,7 +281,7 @@ public class OverlayMenu extends VBox {
         return;
       }
       try {
-        tempChanged = true;
+        valChanged = true;
         double temperature = Double.parseDouble(newVal);
         if (source == inputCelsius) {
           inputKelvin.setText(String.valueOf(temperature + 273.15));
@@ -298,7 +298,7 @@ public class OverlayMenu extends VBox {
         inputFahrenheit.clear();
         inputKelvin.clear();
       } finally {
-        tempChanged = false;
+        valChanged = false;
       }
     };
     inputCelsius.textProperty().addListener(temperaturListener);
@@ -324,7 +324,7 @@ public class OverlayMenu extends VBox {
 
     ChangeListener<String> weightListener = (observableValue, oldVal, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
-      if (weightChanged) {
+      if (valChanged) {
         return;
       }
       if (newVal.isEmpty()) {
@@ -334,7 +334,7 @@ public class OverlayMenu extends VBox {
         return;
       }
       try {
-        weightChanged = true;
+        valChanged = true;
         double weight = Double.parseDouble(newVal);
         if (source == inputGramm) {
           inputPound.setText(String.valueOf((weight / 1000) * 2.204623));
@@ -351,7 +351,7 @@ public class OverlayMenu extends VBox {
         inputKilogramm.clear();
         inputPound.clear();
       } finally {
-        weightChanged = false;
+        valChanged = false;
       }
     };
     inputGramm.textProperty().addListener(weightListener);
@@ -371,12 +371,12 @@ public class OverlayMenu extends VBox {
     TextField sphereVolume = new TextField();
 
     sphereBox.getChildren().addAll(
-            new Label("Geometry: "),
-            new HBox(5, new Label("Circle/Sphere-radius: "), inputRadius),
+            new Label("Geometry - Circle and Sphere: "),
+            new HBox(5, new Label("Radius: "), inputRadius),
             new HBox(5, new Label("Circle Area: "), circleArea),
             new HBox(5, new Label("Circumference: "), circumference),
-            new HBox(5, new Label("Surface area: "), sphereSurfaceArea),
-            new HBox(5, new Label("Volume: "), sphereVolume)
+            new HBox(5, new Label("Volume: "), sphereVolume),
+            new HBox(5, new Label("Surface Area: "), sphereSurfaceArea)
     );
 
     inputRadius.textProperty().addListener(((observableValue, oldVal, newVal) -> {
@@ -401,5 +401,48 @@ public class OverlayMenu extends VBox {
       }
     }));
     return sphereBox;
+  }
+
+  private VBox cubeBox() {
+    VBox cubeBox = new VBox(10);
+    cubeBox.setPadding(new Insets(10));
+
+    TextField inputLength = new TextField();
+    TextField squareArea = new TextField();
+    TextField circumference = new TextField();
+    TextField cubeVolume = new TextField();
+    TextField cubeSurface = new TextField();
+
+    cubeBox.getChildren().addAll(
+            new Label("Geometry - Square and Cube: "),
+            new HBox(5, new Label("Length: "), inputLength),
+            new HBox(5, new Label("Area of square: "), squareArea),
+            new HBox(5, new Label("Circumfercence: "), circumference),
+            new HBox(5, new Label("Volume of cube: "), cubeVolume),
+            new HBox(5, new Label("Surface Area: "), cubeSurface)
+    );
+
+    inputLength.textProperty().addListener(((observableValue, oldVal, newVal) -> {
+      if (!newVal.isEmpty()) {
+        try {
+          double d = Double.parseDouble(newVal);
+          squareArea.setText(String.valueOf(d * d));
+          circumference.setText(String.valueOf(4 * d));
+          cubeVolume.setText(String.valueOf(d * d * d));
+          cubeSurface.setText(String.valueOf(6 * (d * d)));
+        } catch (Exception exception) {
+          squareArea.clear();
+          circumference.clear();
+          cubeVolume.clear();
+          cubeSurface.clear();
+        }
+      } else {
+        squareArea.clear();
+        circumference.clear();
+        cubeVolume.clear();
+        cubeSurface.clear();
+      }
+    }));
+    return cubeBox;
   }
 }

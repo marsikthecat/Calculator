@@ -21,22 +21,23 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
- * Main: 260 lines.
- * CalcButton: 40 lines.
+ * Main: 340 lines.
+ * CalcButton: 53 lines.
  * SimpleParser: 138 lines.
- * OverlayMenu: 405 lines.
- * 843 lines + 17 lines css = 862 lines.
+ * OverlayMenu: 448 lines.
+ * 979 lines + 17 lines css = 996 lines.
  */
 
 public class Main extends Application {
 
   private TextField outputField;
   private final String[][] symbols = {
-          {"ln", "^", "x³", "√", "x²", "log10"},
-          {"e", "(", "7", "4", "1", "1/X"},
-          {"π", ")", "8", "5", "2", "0"},
-          {"C", "!", "9", "6", "3", "."},
-          {">", "/", "*", "+", "-", "="}};
+          {"2ˣ", "sin⁻¹", "cos⁻¹", "tan⁻¹", "10ˣ", "eˣ", "³√x"},
+          {"ln", "rad", "^", "x³", "√", "x²", "log10"},
+          {"e", "deg", "(", "7", "4", "1", "1/X"},
+          {"π", "sin", ")", "8", "5", "2", "0"},
+          {"C", "cos", "x!", "9", "6", "3", "."},
+          {">", "tan", "/", "*", "+", "-", "="}};
   private final OverlayMenu overlayMenu = new OverlayMenu();
 
   @Override
@@ -46,14 +47,14 @@ public class Main extends Application {
     menuIcon.setFont(new Font(20));
     menuIcon.setTextFill(Color.WHITE);
     HBox topNav = new HBox(menuIcon);
-    topNav.setPadding(new Insets(5, 0, 15, 10));
+    topNav.setPadding(new Insets(5, 0, 10, 10));
 
     overlayMenu.setLayoutX(0);
     overlayMenu.setLayoutY(0);
     overlayMenu.setVisible(false);
 
     outputField = new TextField();
-    outputField.setStyle("-fx-pref-width: 300px; -fx-font-size: 25; -fx-cursor: not-allowed");
+    outputField.setStyle("-fx-pref-width: 350px; -fx-font-size: 24");
     outputField.setEditable(false);
     outputField.setFocusTraversable(false);
     HBox rsection = new HBox();
@@ -64,7 +65,7 @@ public class Main extends Application {
 
     VBox box = new VBox();
     box.setStyle("-fx-background-color: #b9b9b9");
-    box.getChildren().addAll(topNav, rsection, table, overlayMenu);
+    box.getChildren().addAll(topNav, rsection, table);
 
     StackPane root = new StackPane(box, overlayMenu);
 
@@ -76,7 +77,7 @@ public class Main extends Application {
   }
 
   private Scene getScene(StackPane stackPane) {
-    Scene scene = new Scene(stackPane, 320, 480);
+    Scene scene = new Scene(stackPane, 370, 530);
     scene.getStylesheets().add(Objects.requireNonNull(
             getClass().getResource("/styles.css")).toExternalForm());
     scene.setOnKeyPressed(e -> {
@@ -105,11 +106,12 @@ public class Main extends Application {
     for (int row = 0; row < symbols.length; row++) {
       for (int col = 0; col < symbols[row].length; col++) {
         String symbol = symbols[row][col];
-        CalcButton button = new CalcButton(symbol, row, col, table);
+        CalcButton button = new CalcButton(symbol, col, row, table);
         switch (symbol) {
           case "C" -> button.act(() -> outputField.clear());
           case ">" -> button.act(this::delete);
-          case "√", "x²", "x³", "!", "ln", "log10", "1/X" ->
+          case "√", "x²", "x³", "x!", "ln", "log10", "1/X", "Rad", "Deg", "sin", "cos", "tan",
+                  "2ˣ", "sin⁻¹", "cos⁻¹", "tan⁻¹", "10ˣ", "eˣ", "³√x" ->
               button.act(() -> calcExp(symbol));
           case "=" -> button.act(this::calculate);
           case "π" -> button.act(() -> insert("3.141529"));
@@ -146,6 +148,9 @@ public class Main extends Application {
   }
 
   private void calcExp(String specialOperation) {
+    if (outputField.getText().isEmpty()) {
+      return;
+    }
     double d;
     try {
       d = SimpleParser.parse(outputField.getText());
@@ -161,13 +166,37 @@ public class Main extends Application {
       break;
       case "x³": cube(d);
       break;
-      case "!": faculty(d);
+      case "x!": faculty(d);
       break;
       case "ln": ln(d);
       break;
       case "log10": log10(d);
       break;
       case "1/X": fraction(d);
+      break;
+      case "Rad": toRadiant(d);
+      break;
+      case "Deg": toDegrees(d);
+      break;
+      case "sin": toSin(d);
+      break;
+      case "cos": toCos(d);
+      break;
+      case "tan": toTan(d);
+      break;
+      case "2ˣ": twoPow(d);
+      break;
+      case "sin⁻¹": toArcSin(d);
+      break;
+      case "cos⁻¹": toArcCos(d);
+      break;
+      case "tan⁻¹": toArcTan(d);
+      break;
+      case "10ˣ": tenPow(d);
+      break;
+      case "eˣ": eulerPow(d);
+      break;
+      case "³√x": treeSqrt(d);
       break;
       default: error(new UnsupportedOperationException("Unsupported Operation detected"));
     }
@@ -226,6 +255,54 @@ public class Main extends Application {
     clearAndInsert(String.valueOf(1 / d));
   }
 
+  private void toRadiant(double d) {
+    clearAndInsert(String.valueOf(Math.toRadians(d)));
+  }
+
+  private void toDegrees(double d) {
+    clearAndInsert(String.valueOf(Math.toDegrees(d)));
+  }
+
+  private void toSin(double d) {
+    clearAndInsert(String.valueOf(Math.sin(d)));
+  }
+
+  private void toCos(double d) {
+    clearAndInsert(String.valueOf(Math.cos(d)));
+  }
+
+  private void toTan(double d) {
+    clearAndInsert(String.valueOf(Math.tan(d)));
+  }
+
+  private void twoPow(double d) {
+    clearAndInsert(String.valueOf(Math.pow(2, d)));
+  }
+
+  private void toArcSin(double d) {
+    clearAndInsert(String.valueOf(Math.asin(d)));
+  }
+
+  private void toArcCos(double d) {
+    clearAndInsert(String.valueOf(Math.acos(d)));
+  }
+
+  private void toArcTan(double d) {
+    clearAndInsert(String.valueOf(Math.asin(d)));
+  }
+
+  private void tenPow(double d) {
+    clearAndInsert(String.valueOf(Math.pow(10, d)));
+  }
+
+  private void eulerPow(double d) {
+    clearAndInsert(String.valueOf(Math.pow(Math.E, d)));
+  }
+
+  private void treeSqrt(double d) {
+    clearAndInsert(String.valueOf(Math.pow(d, (double) 1 / 3)));
+  }
+
   private double facultyHelper(double a) throws IllegalArgumentException {
     if (a < 0) {
       error(new IllegalArgumentException("My friend, faculty is only for positive or zero"));
@@ -234,6 +311,9 @@ public class Main extends Application {
   }
 
   private void calculate()  {
+    if (outputField.getText().isEmpty()) {
+      return;
+    }
     try {
       double result = SimpleParser.parse(outputField.getText());
       overlayMenu.pushHistory(outputField.getText());
