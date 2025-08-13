@@ -9,7 +9,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -21,16 +22,16 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
- * Main: 340 lines.
+ * Main: 358 lines.
  * CalcButton: 53 lines.
  * SimpleParser: 138 lines.
- * OverlayMenu: 448 lines.
- * 979 lines + 17 lines css = 996 lines.
+ * OverlayMenu: 470 lines.
+ * 1019 lines + 17 lines css = 1036 lines.
  */
 
 public class Main extends Application {
 
-  private TextField outputField;
+  private TextArea outputField;
   private final String[][] symbols = {
           {"2ˣ", "sin⁻¹", "cos⁻¹", "tan⁻¹", "10ˣ", "eˣ", "³√x"},
           {"ln", "rad", "^", "x³", "√", "x²", "log10"},
@@ -53,13 +54,19 @@ public class Main extends Application {
     overlayMenu.setLayoutY(0);
     overlayMenu.setVisible(false);
 
-    outputField = new TextField();
-    outputField.setStyle("-fx-pref-width: 350px; -fx-font-size: 24");
+    outputField = new TextArea();
+    outputField.setPrefWidth(350);
+    outputField.setFont(Font.font(24));
     outputField.setEditable(false);
     outputField.setFocusTraversable(false);
+
+    ScrollPane outputBox = new ScrollPane(outputField);
+    outputBox.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    outputBox.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
     HBox rsection = new HBox();
     rsection.setAlignment(Pos.CENTER);
-    rsection.getChildren().addAll(outputField);
+    rsection.getChildren().addAll(outputBox);
 
     GridPane table = getGridPaneWithButtons();
 
@@ -110,12 +117,12 @@ public class Main extends Application {
         switch (symbol) {
           case "C" -> button.act(() -> outputField.clear());
           case ">" -> button.act(this::delete);
-          case "√", "x²", "x³", "x!", "ln", "log10", "1/X", "Rad", "Deg", "sin", "cos", "tan",
+          case "√", "x²", "x³", "x!", "ln", "log10", "1/X", "rad", "deg", "sin", "cos", "tan",
                   "2ˣ", "sin⁻¹", "cos⁻¹", "tan⁻¹", "10ˣ", "eˣ", "³√x" ->
               button.act(() -> calcExp(symbol));
           case "=" -> button.act(this::calculate);
-          case "π" -> button.act(() -> insert("3.141529"));
-          case "e" -> button.act(() -> insert("2.718128"));
+          case "π" -> button.act(() -> insert(String.valueOf(Math.PI)));
+          case "e" -> button.act(() -> insert(String.valueOf(Math.E)));
           default -> button.act(() -> insert(symbol));
         }
       }
@@ -131,9 +138,8 @@ public class Main extends Application {
     overlayMenu.pushHistory(stuff);
     outputField.clear();
     int roundTo = overlayMenu.getRoundTo();
-    if (stuff.length() > roundTo) {
-      double d = Double.parseDouble(stuff);
-      BigDecimal bd = new BigDecimal(d);
+    if (stuff.length() > roundTo || stuff.contains("E")) {
+      BigDecimal bd = new BigDecimal(stuff);
       bd = bd.setScale(roundTo, RoundingMode.HALF_UP);
       insert(bd.toString());
     } else {
@@ -174,9 +180,9 @@ public class Main extends Application {
       break;
       case "1/X": fraction(d);
       break;
-      case "Rad": toRadiant(d);
+      case "rad": toRadiant(d);
       break;
-      case "Deg": toDegrees(d);
+      case "deg": toDegrees(d);
       break;
       case "sin": toSin(d);
       break;
@@ -280,10 +286,18 @@ public class Main extends Application {
   }
 
   private void toArcSin(double d) {
+    if (d > 1 || d < -1) {
+      error(new IllegalArgumentException("My friend, only values between -1 and 1 are valid"));
+      return;
+    }
     clearAndInsert(String.valueOf(Math.asin(d)));
   }
 
   private void toArcCos(double d) {
+    if (d > 1 || d < -1) {
+      error(new IllegalArgumentException("My friend, only values between -1 and 1 are valid"));
+      return;
+    }
     clearAndInsert(String.valueOf(Math.acos(d)));
   }
 
@@ -300,6 +314,10 @@ public class Main extends Application {
   }
 
   private void treeSqrt(double d) {
+    if (d < 0) {
+      error(new IllegalArgumentException("My friend, negative square root are not defined"));
+      return;
+    }
     clearAndInsert(String.valueOf(Math.pow(d, (double) 1 / 3)));
   }
 

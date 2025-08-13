@@ -1,5 +1,6 @@
 package com.example.calulator;
 
+import java.util.function.UnaryOperator;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -10,6 +11,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -84,6 +86,7 @@ public class OverlayMenu extends VBox {
     TextField inputMs = new TextField();
     TextField inputMph = new TextField();
     TextField inputMach = new TextField();
+    acceptOnlyNumbers(inputKm, inputMs, inputMph, inputMach);
 
     speedBox.getChildren().addAll(
             new Label("Speed: "),
@@ -152,6 +155,7 @@ public class OverlayMenu extends VBox {
     TextField meter = new TextField();
     TextField kilometer = new TextField();
     TextField lightYear = new TextField();
+    acceptOnlyNumbers(nanoMeter, mikrometer, millimeter, centimeter, meter, kilometer, lightYear);
 
     lenghBox.getChildren().addAll(
             new Label("Length: "),
@@ -261,6 +265,7 @@ public class OverlayMenu extends VBox {
     TextField inputCelsius = new TextField();
     TextField inputFahrenheit = new TextField();
     TextField inputKelvin = new TextField();
+    acceptOnlyNumbers(inputCelsius, inputFahrenheit, inputKelvin);
 
     temperatureBox.getChildren().addAll(
             new Label("Temperature: "),
@@ -314,6 +319,7 @@ public class OverlayMenu extends VBox {
     TextField inputGramm = new TextField();
     TextField inputKilogramm = new TextField();
     TextField inputPound = new TextField();
+    acceptOnlyNumbers(inputGramm, inputKilogramm, inputPound);
 
     weightBox.getChildren().addAll(
             new Label("Weight: "),
@@ -365,6 +371,7 @@ public class OverlayMenu extends VBox {
     sphereBox.setPadding(new Insets(10));
 
     TextField inputRadius = new TextField();
+    acceptOnlyNumbers(inputRadius);
     TextField circleArea = new TextField();
     TextField circumference = new TextField();
     TextField sphereSurfaceArea = new TextField();
@@ -408,6 +415,7 @@ public class OverlayMenu extends VBox {
     cubeBox.setPadding(new Insets(10));
 
     TextField inputLength = new TextField();
+    acceptOnlyNumbers(inputLength);
     TextField squareArea = new TextField();
     TextField circumference = new TextField();
     TextField cubeVolume = new TextField();
@@ -444,5 +452,19 @@ public class OverlayMenu extends VBox {
       }
     }));
     return cubeBox;
+  }
+
+
+  private void acceptOnlyNumbers(TextField... textField) {
+    UnaryOperator<TextFormatter.Change> filter = change -> {
+      String newText = change.getControlNewText();
+      if (newText.matches("\\d*(\\.\\d*)?")) {
+        return change;
+      }
+      return null;
+    };
+    for (TextField field : textField) {
+      field.setTextFormatter(new TextFormatter<>(filter));
+    }
   }
 }
