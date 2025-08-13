@@ -13,5 +13,5 @@
   -fx-font-size: 15;
 }
 .overlay VBox TextField {
-  -fx-pref-width: 130;
+  -fx-pref-width: 180;
 }

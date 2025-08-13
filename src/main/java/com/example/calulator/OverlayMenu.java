@@ -1,6 +1,5 @@
 package com.example.calulator;
 
-import java.util.function.UnaryOperator;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -11,7 +10,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -229,11 +228,11 @@ public class OverlayMenu extends VBox {
           meter.setText(String.valueOf(length * 1000));
           lightYear.setText(String.valueOf(length / 9.4607e12));
         } else if (source == lightYear) {
-          nanoMeter.setText(String.valueOf(length / 9.4607e24));
-          mikrometer.setText(String.valueOf(length / 9.4607e21));
-          millimeter.setText(String.valueOf(length / 9.4607e18));
-          centimeter.setText(String.valueOf(length / 9.4607e17));
-          meter.setText(String.valueOf(length / 9.4607e15));
+          nanoMeter.setText(String.valueOf(length * 9.4607e24));
+          mikrometer.setText(String.valueOf(length * 9.4607e21));
+          millimeter.setText(String.valueOf(length * 9.4607e18));
+          centimeter.setText(String.valueOf(length * 9.4607e17));
+          meter.setText(String.valueOf(length * 9.4607e15));
           kilometer.setText(String.valueOf(length * 9.4607e12));
         }
       } catch (NumberFormatException e) {
@@ -454,17 +453,18 @@ public class OverlayMenu extends VBox {
     return cubeBox;
   }
 
-
   private void acceptOnlyNumbers(TextField... textField) {
-    UnaryOperator<TextFormatter.Change> filter = change -> {
-      String newText = change.getControlNewText();
-      if (newText.matches("\\d*(\\.\\d*)?")) {
-        return change;
-      }
-      return null;
-    };
     for (TextField field : textField) {
-      field.setTextFormatter(new TextFormatter<>(filter));
+      field.addEventFilter(KeyEvent.KEY_TYPED, event -> {
+        String character = event.getCharacter();
+        if (!character.matches("[0-9.]")) {
+          event.consume();
+          return;
+        }
+        if (character.equals(".") && field.getText().contains(".")) {
+          event.consume();
+        }
+      });
     }
   }
 }
