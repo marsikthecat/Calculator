@@ -22,11 +22,11 @@ import javafx.stage.Stage;
 
 /**
  * Simple Calculator.
- * Main: 358 lines.
+ * Main: 351 lines.
  * CalcButton: 53 lines.
  * SimpleParser: 138 lines.
- * OverlayMenu: 470 lines.
- * 1019 lines + 17 lines css = 1036 lines.
+ * OverlayMenu: 469 lines.
+ * 1011 lines + 17 lines CSS.
  */
 
 public class Main extends Application {
@@ -44,7 +44,7 @@ public class Main extends Application {
   @Override
   public void start(Stage stage) {
     Label menuIcon = new Label("☰");
-    menuIcon.setOnMouseClicked(e -> overlayMenu.setVisible(true));
+    menuIcon.setOnMouseClicked(_ -> overlayMenu.setVisible(true));
     menuIcon.setFont(new Font(20));
     menuIcon.setTextFill(Color.WHITE);
     HBox topNav = new HBox(menuIcon);
@@ -347,12 +347,5 @@ public class Main extends Application {
     alert.setHeaderText("Something went wrong while calculating: ");
     alert.setContentText(exception.getMessage());
     alert.showAndWait();
-  }
-
-  /**
-   * look below OMG!, there is a main method!.
-   */
-  public static void main(String[] args) {
-    launch(args);
   }
 }

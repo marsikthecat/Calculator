@@ -28,10 +28,9 @@ public class OverlayMenu extends VBox {
   /**
    * Sets up all the headlines, slider, historyListview and the boxes with convertion themes.
    */
-
   public OverlayMenu() {
     Label closeLable = new Label("✖");
-    closeLable.setOnMouseClicked(e -> setVisible(false));
+    closeLable.setOnMouseClicked(_ -> setVisible(false));
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
     HBox closeNav = new HBox();
@@ -41,7 +40,7 @@ public class OverlayMenu extends VBox {
     Label roundToDecimalPoint = new Label("Round numbers to: ");
     Spinner<Integer> intSpinner = new Spinner<>(0, 16, 8);
     intSpinner.setPrefWidth(60);
-    intSpinner.valueProperty().addListener((obs, oldVal, newVal) -> roundTo = newVal);
+    intSpinner.valueProperty().addListener((_, _, newVal) -> roundTo = newVal);
     HBox roundingSettingsBox = new HBox(10, roundToDecimalPoint, intSpinner);
     roundingSettingsBox.setPadding(new Insets(0, 0, 0, 10));
 
@@ -70,7 +69,7 @@ public class OverlayMenu extends VBox {
   }
 
   /**
-   * the calculation-input or an expression with the corresponding operation applied,
+   * The calculation-input or an expression with the corresponding operation applied,
    * gets added in the historyListView. It is not permantent, like a sessionstorage.
    */
   public void pushHistory(String expr) {
@@ -95,7 +94,7 @@ public class OverlayMenu extends VBox {
             new HBox(5, new Label("Mach:"), inputMach)
     );
 
-    ChangeListener<String> speedListener = (observableValue, oldVal, newVal) -> {
+    ChangeListener<String> speedListener = (observableValue, _, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
       if (valChanged) {
         return;
@@ -167,7 +166,7 @@ public class OverlayMenu extends VBox {
             new HBox(5, new Label("Light year: "), lightYear)
     );
 
-    ChangeListener<String> lengthListener = (observableValue, oldVal, newVal) -> {
+    ChangeListener<String> lengthListener = (observableValue, _, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
       if (valChanged) {
         return;
@@ -273,7 +272,7 @@ public class OverlayMenu extends VBox {
             new HBox(5, new Label("K°:"), inputKelvin)
     );
 
-    ChangeListener<String> temperaturListener = (observableValue, oldVal, newVal) -> {
+    ChangeListener<String> temperaturListener = (observableValue, _, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
       if (valChanged) {
         return;
@@ -327,7 +326,7 @@ public class OverlayMenu extends VBox {
             new HBox(5, new Label("Pfund Ib:"), inputPound)
     );
 
-    ChangeListener<String> weightListener = (observableValue, oldVal, newVal) -> {
+    ChangeListener<String> weightListener = (observableValue, _, newVal) -> {
       TextField source = (TextField) ((StringProperty) observableValue).getBean();
       if (valChanged) {
         return;
@@ -385,7 +384,7 @@ public class OverlayMenu extends VBox {
             new HBox(5, new Label("Surface Area: "), sphereSurfaceArea)
     );
 
-    inputRadius.textProperty().addListener(((observableValue, oldVal, newVal) -> {
+    inputRadius.textProperty().addListener(((_, _, newVal) -> {
       if (!newVal.isEmpty()) {
         try {
           double d = Double.parseDouble(newVal);
@@ -429,7 +428,7 @@ public class OverlayMenu extends VBox {
             new HBox(5, new Label("Surface Area: "), cubeSurface)
     );
 
-    inputLength.textProperty().addListener(((observableValue, oldVal, newVal) -> {
+    inputLength.textProperty().addListener(((_, _, newVal) -> {
       if (!newVal.isEmpty()) {
         try {
           double d = Double.parseDouble(newVal);

@@ -9,7 +9,7 @@ public class SimpleParser {
   static int pos = 0;
 
   /**
-   * start method for parsing.
+   * Start method for parsing.
    */
   public static double parse(String input) throws Exception {
     SimpleParser.input = input;
@@ -91,7 +91,7 @@ public class SimpleParser {
   }
 
   /**
-    * Handels branced Expressions.
+   * Handels branced Expressions.
    */
   public static double bracedExpression() throws Exception {
     if (getNextChar() != '(') {
@@ -105,8 +105,8 @@ public class SimpleParser {
   }
 
   /**
-    * Looks for Numbers and parses them.
-  */
+   * Looks for Numbers and parses them.
+   */
   public static double number() throws Exception {
     StringBuilder sb = new StringBuilder();
     while (hasNextChar() && (Character.isDigit(peek()) || peek() == '.')) {

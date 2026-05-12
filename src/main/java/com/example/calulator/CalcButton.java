@@ -19,9 +19,9 @@ public class CalcButton extends Button {
     setMinSize(50, 50);
     setMaxSize(50, 50);
     setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-border-width: 0");
-    setOnMouseEntered(e -> setStyle("-fx-background-color: #b6b6b6; -fx-text-fill: black;"
+    setOnMouseEntered(_ -> setStyle("-fx-background-color: #b6b6b6; -fx-text-fill: black;"
             + " -fx-border-width: 0"));
-    setOnMouseExited(e -> setStyle("-fx-background-color: white; -fx-text-fill: black; "
+    setOnMouseExited(_ -> setStyle("-fx-background-color: white; -fx-text-fill: black; "
             + "-fx-border-width: 0"));
     if (sign.length() == 1) {
       setFont(Font.font(24));
@@ -48,6 +48,6 @@ public class CalcButton extends Button {
    * Sets up the action, the spcific Button should perform.
    */
   public void act(Runnable action) {
-    this.setOnAction(e -> action.run());
+    this.setOnAction(_ -> action.run());
   }
 }
